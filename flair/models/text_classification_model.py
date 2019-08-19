@@ -107,7 +107,7 @@ class TextClassifier(flair.nn.Model):
     def _load_state(cls, model_file):
         with warnings.catch_warnings():
             warnings.filterwarnings(u'ignore')
-            f = flair.file_utils.load_big_file(unicode(model_file))
+            f = flair.file_utils.load_big_file(str(model_file))
             state = torch.load(f, map_location=flair.device)
             return state
 
