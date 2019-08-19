@@ -1,5 +1,12 @@
 
-from pathlib import Path
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+try:
+    from pathlib import Path
+except ImportError:
+    from pathlib2 import Path
 import torch.nn as nn
 import torch
 import math
@@ -11,9 +18,9 @@ from flair.data import Dictionary
 
 
 class LanguageModel(nn.Module):
-    'Container module with an encoder, a recurrent module, and a decoder.'
+    u'Container module with an encoder, a recurrent module, and a decoder.'
 
-    def __init__(self, dictionary: Dictionary, is_forward_lm: bool, hidden_size: int, nlayers: int, embedding_size: int = 100, nout=None, dropout=0.1):
+    def __init__(self, dictionary, is_forward_lm, hidden_size, nlayers, embedding_size=100, nout=None, dropout=0.1):
         super(LanguageModel, self).__init__()
         self.dictionary = dictionary
         self.is_forward_lm = is_forward_lm
@@ -65,7 +72,7 @@ class LanguageModel(nn.Module):
         weight = next(self.parameters()).detach()
         return (weight.new(self.nlayers, bsz, self.hidden_size).zero_().clone().detach(), weight.new(self.nlayers, bsz, self.hidden_size).zero_().clone().detach())
 
-    def get_representation(self, strings: List[str], chars_per_chunk: int = 512):
+    def get_representation(self, strings, chars_per_chunk=512):
         longest = len(strings[0])
         chunks = []
         splice_begin = 0
@@ -89,7 +96,7 @@ class LanguageModel(nn.Module):
         output = torch.cat(output_parts)
         return output
 
-    def get_output(self, text: str):
+    def get_output(self, text):
         char_indices = [self.dictionary.get_idx_for_item(
             char) for char in text]
         input_vector = torch.LongTensor([char_indices]).transpose(0, 1)
@@ -98,7 +105,7 @@ class LanguageModel(nn.Module):
         return self.repackage_hidden(hidden)
 
     def repackage_hidden(self, h):
-        'Wraps hidden states in new Variables, to detach them from their history.'
+        u'Wraps hidden states in new Variables, to detach them from their history.'
         if (type(h) == torch.Tensor):
             return h.clone().detach()
         else:
@@ -110,69 +117,69 @@ class LanguageModel(nn.Module):
         matrix.detach().uniform_((- stdv), stdv)
 
     @classmethod
-    def load_language_model(cls, model_file: Union[(Path, str)]):
-        state = torch.load(str(model_file), map_location=flair.device)
-        model = LanguageModel(state['dictionary'], state['is_forward_lm'], state['hidden_size'],
-                              state['nlayers'], state['embedding_size'], state['nout'], state['dropout'])
-        model.load_state_dict(state['state_dict'])
+    def load_language_model(cls, model_file):
+        state = torch.load(unicode(model_file), map_location=flair.device)
+        model = LanguageModel(state[u'dictionary'], state[u'is_forward_lm'], state[u'hidden_size'],
+                              state[u'nlayers'], state[u'embedding_size'], state[u'nout'], state[u'dropout'])
+        model.load_state_dict(state[u'state_dict'])
         model.eval()
         model.to(flair.device)
         return model
 
     @classmethod
-    def load_checkpoint(cls, model_file: Path):
-        state = torch.load(str(model_file), map_location=flair.device)
-        epoch = (state['epoch'] if ('epoch' in state) else None)
-        split = (state['split'] if ('split' in state) else None)
-        loss = (state['loss'] if ('loss' in state) else None)
-        optimizer_state_dict = (state['optimizer_state_dict'] if (
-            'optimizer_state_dict' in state) else None)
-        model = LanguageModel(state['dictionary'], state['is_forward_lm'], state['hidden_size'],
-                              state['nlayers'], state['embedding_size'], state['nout'], state['dropout'])
-        model.load_state_dict(state['state_dict'])
+    def load_checkpoint(cls, model_file):
+        state = torch.load(unicode(model_file), map_location=flair.device)
+        epoch = (state[u'epoch'] if (u'epoch' in state) else None)
+        split = (state[u'split'] if (u'split' in state) else None)
+        loss = (state[u'loss'] if (u'loss' in state) else None)
+        optimizer_state_dict = (state[u'optimizer_state_dict'] if (
+            u'optimizer_state_dict' in state) else None)
+        model = LanguageModel(state[u'dictionary'], state[u'is_forward_lm'], state[u'hidden_size'],
+                              state[u'nlayers'], state[u'embedding_size'], state[u'nout'], state[u'dropout'])
+        model.load_state_dict(state[u'state_dict'])
         model.eval()
         model.to(flair.device)
         return {
-            'model': model,
-            'epoch': epoch,
-            'split': split,
-            'loss': loss,
-            'optimizer_state_dict': optimizer_state_dict,
+            u'model': model,
+            u'epoch': epoch,
+            u'split': split,
+            u'loss': loss,
+            u'optimizer_state_dict': optimizer_state_dict,
         }
 
-    def save_checkpoint(self, file: Path, optimizer: Optimizer, epoch: int, split: int, loss: float):
+    def save_checkpoint(self, file, optimizer, epoch, split, loss):
         model_state = {
-            'state_dict': self.state_dict(),
-            'dictionary': self.dictionary,
-            'is_forward_lm': self.is_forward_lm,
-            'hidden_size': self.hidden_size,
-            'nlayers': self.nlayers,
-            'embedding_size': self.embedding_size,
-            'nout': self.nout,
-            'dropout': self.dropout,
-            'optimizer_state_dict': optimizer.state_dict(),
-            'epoch': epoch,
-            'split': split,
-            'loss': loss,
+            u'state_dict': self.state_dict(),
+            u'dictionary': self.dictionary,
+            u'is_forward_lm': self.is_forward_lm,
+            u'hidden_size': self.hidden_size,
+            u'nlayers': self.nlayers,
+            u'embedding_size': self.embedding_size,
+            u'nout': self.nout,
+            u'dropout': self.dropout,
+            u'optimizer_state_dict': optimizer.state_dict(),
+            u'epoch': epoch,
+            u'split': split,
+            u'loss': loss,
         }
-        torch.save(model_state, str(file), pickle_protocol=4)
+        torch.save(model_state, unicode(file), pickle_protocol=4)
 
-    def save(self, file: Path):
+    def save(self, file):
         model_state = {
-            'state_dict': self.state_dict(),
-            'dictionary': self.dictionary,
-            'is_forward_lm': self.is_forward_lm,
-            'hidden_size': self.hidden_size,
-            'nlayers': self.nlayers,
-            'embedding_size': self.embedding_size,
-            'nout': self.nout,
-            'dropout': self.dropout,
+            u'state_dict': self.state_dict(),
+            u'dictionary': self.dictionary,
+            u'is_forward_lm': self.is_forward_lm,
+            u'hidden_size': self.hidden_size,
+            u'nlayers': self.nlayers,
+            u'embedding_size': self.embedding_size,
+            u'nout': self.nout,
+            u'dropout': self.dropout,
         }
-        torch.save(model_state, str(file), pickle_protocol=4)
+        torch.save(model_state, unicode(file), pickle_protocol=4)
 
-    def generate_text(self, prefix: str = '\n', number_of_characters: int = 1000, temperature: float = 1.0, break_on_suffix=None) -> Tuple[(str, float)]:
-        if (prefix == ''):
-            prefix = '\n'
+    def generate_text(self, prefix=u'\n', number_of_characters=1000, temperature=1.0, break_on_suffix=None):
+        if (prefix == u''):
+            prefix = u'\n'
         with torch.no_grad():
             characters = []
             idx2item = self.dictionary.idx2item
@@ -206,12 +213,12 @@ class LanguageModel(nn.Module):
                 prob = decoder_output[word_idx]
                 log_prob += prob
                 input = word_idx.detach().unsqueeze(0).unsqueeze(0)
-                word = idx2item[word_idx].decode('UTF-8')
+                word = idx2item[word_idx].decode(u'UTF-8')
                 characters.append(word)
                 if (break_on_suffix is not None):
-                    if ''.join(characters).endswith(break_on_suffix):
+                    if u''.join(characters).endswith(break_on_suffix):
                         break
-            text = (prefix + ''.join(characters))
+            text = (prefix + u''.join(characters))
             log_prob = log_prob.item()
             log_prob /= len(characters)
             if (not self.is_forward_lm):

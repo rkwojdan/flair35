@@ -1,44 +1,48 @@
+
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 import pytest
-from pathlib import Path
+try:
+    from pathlib import Path
+except ImportError:
+    from pathlib2 import Path
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope=u'module')
 def resources_path():
-    return Path(__file__).parent / 'resources'
+    return (Path(__file__).parent / u'resources')
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope=u'module')
 def tasks_base_path(resources_path):
-    return resources_path / 'tasks'
+    return (resources_path / u'tasks')
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope=u'module')
 def results_base_path(resources_path):
-    return resources_path / 'results'
+    return (resources_path / u'results')
 
 
 def pytest_addoption(parser):
-    parser.addoption(
-        "--runslow", action="store_true", default=False, help="run slow tests"
-    )
-    parser.addoption(
-        "--runintegration", action="store_true", default=False, help="run integration tests"
-    )
+    parser.addoption(u'--runslow', action=u'store_true',
+                     default=False, help=u'run slow tests')
+    parser.addoption(u'--runintegration', action=u'store_true',
+                     default=False, help=u'run integration tests')
 
 
 def pytest_collection_modifyitems(config, items):
-    if config.getoption("--runslow") and config.getoption("--runintegration"):
+    if (config.getoption(u'--runslow') and config.getoption(u'--runintegration')):
         return
-
-    if not config.getoption("--runslow"):
-        skip_slow = pytest.mark.skip(reason="need --runslow option to run")
+    if (not config.getoption(u'--runslow')):
+        skip_slow = pytest.mark.skip(reason=u'need --runslow option to run')
         for item in items:
-            if "slow" in item.keywords:
+            if (u'slow' in item.keywords):
                 item.add_marker(skip_slow)
-
-    if not config.getoption("--runintegration"):
+    if (not config.getoption(u'--runintegration')):
         skip_integration = pytest.mark.skip(
-            reason="need --runintegration option to run")
+            reason=u'need --runintegration option to run')
         for item in items:
-            if "integration" in item.keywords:
+            if (u'integration' in item.keywords):
                 item.add_marker(skip_integration)

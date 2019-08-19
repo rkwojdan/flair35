@@ -1,4 +1,8 @@
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 import pytest
 from typing import Tuple
 from flair.data import Dictionary, TaggedCorpus
@@ -7,10 +11,10 @@ from flair.embeddings import WordEmbeddings, DocumentLSTMEmbeddings
 from flair.models.text_classification_model import TextClassifier
 
 
-def init(tasks_base_path) -> Tuple[(TaggedCorpus, Dictionary, TextClassifier)]:
+def init(tasks_base_path):
     corpus = NLPTaskDataFetcher.load_corpus(NLPTask.AG_NEWS, tasks_base_path)
     label_dict = corpus.make_label_dictionary()
-    glove_embedding = WordEmbeddings('en-glove')
+    glove_embedding = WordEmbeddings(u'en-glove')
     document_embeddings = DocumentLSTMEmbeddings(
         [glove_embedding], 128, 1, False, 64, False, False)
     model = TextClassifier(document_embeddings, label_dict, False)
